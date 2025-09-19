@@ -1,7 +1,7 @@
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 
-const basket = reactive([
+const basketDefault = [
   {
     id: 1,
     name: 'Blue Flower Print Crop Top',
@@ -29,7 +29,20 @@ const basket = reactive([
     quantity: 1,
     image: './assets/sweatshirt.png',
   },
-])
+]
+
+const basket = reactive([])
+
+onMounted(() => {
+  const storedBasket = JSON.parse(localStorage.getItem('basket'))
+  if (storedBasket?.length) basket.push(...storedBasket)
+  else basket.push(...basketDefault)
+})
+
+watch(basket, (newBasket) => {
+  if (newBasket.length) localStorage.setItem('basket', JSON.stringify(newBasket))
+  else localStorage.removeItem('basket')
+})
 
 const totalPrice = computed(() => {
   return basket.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)
@@ -51,6 +64,10 @@ const decreaseItemQuantity = (item) => {
 
 const removeItem = (index) => {
   basket.splice(index, 1)
+}
+
+const resetBasket = () => {
+  basket.splice(0, basket.length, ...basketDefault)
 }
 </script>
 
@@ -138,6 +155,7 @@ const removeItem = (index) => {
         </tr>
       </tbody>
     </table>
+    <button @click="resetBasket">Default</button>
   </div>
 </template>
 
